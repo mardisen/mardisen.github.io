@@ -1,7 +1,7 @@
 import type { JSX, ParentComponent, ParentProps } from 'solid-js';
 
 // TODO: Calculate Speed DONE
-// TODO: Calculate Angle
+// TODO: Calculate Angle DONE
 // TODO: Animate basic Drag
     // TODO: Define transition
     // TODO: Define animation
@@ -17,19 +17,25 @@ type Coordinate = {
     y: number;
 };
 
+type Speed = Coordinate;
+
 type TemporalCoordinate = Coordinate & {
     timestamp: number;
 };
 
-const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): number => {
+const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): Speed => {
     const deltaX = newCoords.x - oldCoords.x;
     const deltaY = oldCoords.y - newCoords.y;
     const deltaT = (newCoords.timestamp - oldCoords.timestamp) / 1000;
 
-    const xRatio = deltaX / deltaT;
-    const yRatio = deltaY / deltaT;
+    const x = deltaX / deltaT;
+    const y = deltaY / deltaT;
 
-    return Math.sqrt(xRatio * xRatio + yRatio * yRatio);
+    return { x, y };
+};
+
+const pythagoras = (coords: Coordinate): number => {
+    return Math.sqrt(Math.pow(coords.x, 2) + Math.pow(coords.y, 2));
 };
 
 const onMouseMove: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent> =
