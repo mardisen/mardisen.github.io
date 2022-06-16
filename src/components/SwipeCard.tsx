@@ -4,7 +4,7 @@ import { createMemo, createSignal, JSX, ParentComponent, ParentProps } from 'sol
 // TODO: Calculate Angle DONE
 // TODO: Animate basic Drag DONE
 // TODO: Define transition DONE
-// TODO: Define animation
+// TODO: Define animation DONE
 // TODO: Animate on release
 // TODO: Animate bring back
 // TODO: Optional: Try using onDrag events
@@ -88,10 +88,11 @@ const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
         event => {
             event.preventDefault();
             setIsDragging(false);
+            handleMove(offset());
         };
 
     return <div
-        class={props.class}
+        class={`${!isDragging() && "transition-all"} ` + props.class}
         style={style()}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
