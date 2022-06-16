@@ -44,15 +44,31 @@ const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[
 
 const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
     const [isDragging, setIsDragging] = createSignal(false);
+    const [speed, setSpeed] = createSignal<Speed>({ x: 0, y: 0 });
+
+    const [lastPosition, setLastPosition] = createSignal<TemporalCoordinate>({
+        x: 0,
+        y: 0,
+        timestamp: new Date().getTime()
+    });
+
     const [offset, setOffset] = createSignal<Coordinate>({ x: 0, y: 0 });
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
     const handleMove = (coords: Coordinate) => {
-        const finalPosition: Coordinate = { x: coords.x - offset().x, y: coords.y - offset().y };
+        const finalPosition: TemporalCoordinate = {
+            x: coords.x - offset().x,
+            y: coords.y - offset().y,
+            timestamp: new Date().getTime()
+        };
 
         setStyle({
             transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`
         });
+
+        setSpeed(calcSpeed(lastPosition(), finalPosition));
+
+        setLastPosition(finalPosition);
     };
 
     const onMouseDown: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent> =
@@ -87,8 +103,10 @@ const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
     const onDragEnd: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent | TouchEvent> =
         event => {
             event.preventDefault();
-            setIsDragging(false);
-            handleMove(offset());
+            if (isDragging()) {
+                setIsDragging(false);
+                handleMove(offset());
+            }
         };
 
     return <div
