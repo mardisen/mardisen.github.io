@@ -1,11 +1,11 @@
-import { createMemo, createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
+import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
 
 // TODO: Calculate Speed DONE
 // TODO: Calculate Angle DONE
 // TODO: Animate basic Drag DONE
 // TODO: Define transition DONE
 // TODO: Define animation DONE
-// TODO: Animate on release
+// TODO: Animate on release DONE
 // TODO: Animate bring back
 // TODO: Optional: Try using onDrag events
 
@@ -45,7 +45,7 @@ const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[
 
 const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
     const props = mergeProps({ threshold: 300 }, initialProps);
-    
+
     const [isDragging, setIsDragging] = createSignal(false);
     const [speed, setSpeed] = createSignal<Speed>({ x: 0, y: 0 });
 
@@ -59,9 +59,10 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
     const handleMove = (coords: Coordinate) => {
+        const _offset = offset();
         const finalPosition: TemporalCoordinate = {
-            x: coords.x - offset().x,
-            y: coords.y - offset().y,
+            x: coords.x - _offset.x,
+            y: coords.y - _offset.y,
             timestamp: new Date().getTime()
         };
 
@@ -75,9 +76,9 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
     };
 
     const release = () => {
-        const velocity = pythagoras(speed());
+        const _speed = speed();
+        const velocity = pythagoras(_speed);
         setIsDragging(false);
-        console.info(props.threshold);
         if (velocity < props.threshold) {
             handleMove(offset());
         }
@@ -86,11 +87,10 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
             const multiplier = diagonal / velocity;
 
             const finalPosition: Coordinate = {
-                x: lastPosition().x + (speed().x * multiplier),
-                y: lastPosition().y + (-speed().y * multiplier),
+                x: lastPosition().x + (_speed.x * multiplier),
+                y: lastPosition().y + (-_speed.y * multiplier),
             };
 
-            console.info(finalPosition);
 
             setStyle({
                 transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`,
@@ -137,7 +137,7 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
         };
 
     return <div
-        class={`${!isDragging() && ""} ` + props.class}
+        class={`${!isDragging() && "transition-all"} ` + props.class}
         style={style()}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
