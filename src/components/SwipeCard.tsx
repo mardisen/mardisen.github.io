@@ -1,4 +1,4 @@
-import { createMemo, createSignal, JSX, ParentComponent, ParentProps } from 'solid-js';
+import { createMemo, createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
 
 // TODO: Calculate Speed DONE
 // TODO: Calculate Angle DONE
@@ -11,6 +11,7 @@ import { createMemo, createSignal, JSX, ParentComponent, ParentProps } from 'sol
 
 type Props = {
     class?: string;
+    threshold?: number;
 };
 
 type Coordinate = {
@@ -42,7 +43,9 @@ const pythagoras = (coords: Coordinate): number => {
 const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX, y: event.clientY });
 const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
 
-const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
+const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
+    const props = mergeProps({ threshold: 300 }, initialProps);
+    
     const [isDragging, setIsDragging] = createSignal(false);
     const [speed, setSpeed] = createSignal<Speed>({ x: 0, y: 0 });
 
@@ -69,6 +72,31 @@ const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
         setSpeed(calcSpeed(lastPosition(), finalPosition));
 
         setLastPosition(finalPosition);
+    };
+
+    const release = () => {
+        const velocity = pythagoras(speed());
+        setIsDragging(false);
+        console.info(props.threshold);
+        if (velocity < props.threshold) {
+            handleMove(offset());
+        }
+        else {
+            const diagonal = pythagoras({ x: document.body.clientWidth, y: document.body.clientHeight });
+            const multiplier = diagonal / velocity;
+
+            const finalPosition: Coordinate = {
+                x: lastPosition().x + (speed().x * multiplier),
+                y: lastPosition().y + (-speed().y * multiplier),
+            };
+
+            console.info(finalPosition);
+
+            setStyle({
+                transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`,
+                transition: `ease-out ${multiplier}s`
+            });
+        }
     };
 
     const onMouseDown: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent> =
@@ -104,13 +132,12 @@ const SwipeCard: ParentComponent<Props> = (props: ParentProps<Props>) => {
         event => {
             event.preventDefault();
             if (isDragging()) {
-                setIsDragging(false);
-                handleMove(offset());
+                release();
             }
         };
 
     return <div
-        class={`${!isDragging() && "transition-all"} ` + props.class}
+        class={`${!isDragging() && ""} ` + props.class}
         style={style()}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
