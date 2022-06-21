@@ -46,23 +46,21 @@ const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[
 const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
     const props = mergeProps({ threshold: 300 }, initialProps);
 
-    const [isDragging, setIsDragging] = createSignal(false);
-    const [speed, setSpeed] = createSignal<Speed>({ x: 0, y: 0 });
+    const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
-    const [lastPosition, setLastPosition] = createSignal<TemporalCoordinate>({
+    let isDragging: boolean = false;
+    let speed: Speed = { x: 0, y: 0 };
+    let lastPosition: TemporalCoordinate = {
         x: 0,
         y: 0,
         timestamp: new Date().getTime()
-    });
-
-    const [offset, setOffset] = createSignal<Coordinate>({ x: 0, y: 0 });
-    const [style, setStyle] = createSignal<JSX.CSSProperties>({});
+    };
+    let offset: Coordinate = { x: 0, y: 0 };
 
     const handleMove = (coords: Coordinate) => {
-        const _offset = offset();
         const finalPosition: TemporalCoordinate = {
-            x: coords.x - _offset.x,
-            y: coords.y - _offset.y,
+            x: coords.x - offset.x,
+            y: coords.y - offset.y,
             timestamp: new Date().getTime()
         };
 
@@ -70,25 +68,24 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
             transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`
         });
 
-        setSpeed(calcSpeed(lastPosition(), finalPosition));
+        speed = calcSpeed(lastPosition, finalPosition);
 
-        setLastPosition(finalPosition);
+        lastPosition = finalPosition;
     };
 
     const release = () => {
-        const _speed = speed();
-        const velocity = pythagoras(_speed);
-        setIsDragging(false);
+        const velocity = pythagoras(speed);
+        isDragging = false;
         if (velocity < props.threshold) {
-            handleMove(offset());
+            handleMove(offset);
         }
         else {
             const diagonal = pythagoras({ x: document.body.clientWidth, y: document.body.clientHeight });
             const multiplier = diagonal / velocity;
 
             const finalPosition: Coordinate = {
-                x: lastPosition().x + (_speed.x * multiplier),
-                y: lastPosition().y + (-_speed.y * multiplier),
+                x: lastPosition.x + (speed.x * multiplier),
+                y: lastPosition.y + (-speed.y * multiplier),
             };
 
 
@@ -102,42 +99,42 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
     const onMouseDown: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent> =
         event => {
             event.preventDefault();
-            setIsDragging(true);
-            setOffset(mouseCoordinates(event));
+            isDragging = true;
+            offset = mouseCoordinates(event);
         };
 
     const onTouchStart: JSX.EventHandlerUnion<HTMLDivElement, TouchEvent> =
         event => {
             event.preventDefault();
-            setIsDragging(true);
-            setOffset(touchCoordinates(event));
+            isDragging = true;
+            offset = touchCoordinates(event);
         };
 
 
     const onMouseMove: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent> =
         event => {
             event.preventDefault();
-            if (isDragging())
+            if (isDragging)
                 handleMove(mouseCoordinates(event));
         };
 
     const onTouchMove: JSX.EventHandlerUnion<HTMLDivElement, TouchEvent> =
         event => {
             event.preventDefault();
-            if (isDragging())
+            if (isDragging)
                 handleMove(touchCoordinates(event));
         };
 
     const onDragEnd: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent | TouchEvent> =
         event => {
             event.preventDefault();
-            if (isDragging()) {
+            if (isDragging) {
                 release();
             }
         };
 
     return <div
-        class={`${!isDragging() && "transition-all"} ` + props.class}
+        class={`${!isDragging && "transition-all"} ` + props.class}
         style={style()}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
