@@ -12,6 +12,7 @@ import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'sol
 type Props = {
     class?: string;
     threshold?: number;
+    maxRotation?: number;
 };
 
 type Coordinate = {
@@ -44,11 +45,12 @@ const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX,
 const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
 
 const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
-    const props = mergeProps({ threshold: 300 }, initialProps);
+    const props = mergeProps({ threshold: 300, maxRotation: 7.5 }, initialProps);
 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
     let isDragging: boolean = false;
+    let rotation: number = 0;
     let speed: Speed = { x: 0, y: 0 };
     let lastPosition: TemporalCoordinate = {
         x: 0,
@@ -64,11 +66,13 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
             timestamp: new Date().getTime()
         };
 
-        setStyle({
-            transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`
-        });
-
         speed = calcSpeed(lastPosition, finalPosition);
+        rotation = isDragging ? speed.x / 1000 * props.maxRotation : 0;
+
+        setStyle({
+            transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)
+            rotate(${rotation}deg)`
+        });
 
         lastPosition = finalPosition;
     };
