@@ -7,11 +7,11 @@ import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'sol
 // TODO: Define animation DONE
 // TODO: Animate on release DONE
 // TODO: Animate bring back
-// TODO: Optional: Try using onDrag events
 
 type Props = {
     class?: string;
     threshold?: number;
+    rotationMultiplier?: number;
     maxRotation?: number;
 };
 
@@ -45,7 +45,7 @@ const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX,
 const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
 
 const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
-    const props = mergeProps({ threshold: 300, maxRotation: 7.5 }, initialProps);
+    const props = mergeProps({ threshold: 200, rotationMultiplier: 7.5, maxRotation: 90 }, initialProps);
 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
@@ -67,7 +67,7 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
         };
 
         speed = calcSpeed(lastPosition, finalPosition);
-        rotation = isDragging ? speed.x / 1000 * props.maxRotation : 0;
+        rotation = isDragging ? speed.x / 1000 * props.rotationMultiplier : 0;
 
         setStyle({
             transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)
@@ -92,9 +92,11 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
                 y: lastPosition.y + (-speed.y * multiplier),
             };
 
+            const finalRotation = rotation + (props.maxRotation * (Math.random() - 0.5));
 
             setStyle({
-                transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)`,
+                transform: `translate(${finalPosition.x}px, ${finalPosition.y}px)
+                rotate(${finalRotation}deg)`,
                 transition: `ease-out ${multiplier}s`
             });
         }
