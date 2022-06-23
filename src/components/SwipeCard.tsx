@@ -1,4 +1,4 @@
-import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
+import { createSignal, JSX, mergeProps, ParentComponent, ParentProps, Ref } from 'solid-js';
 
 // TODO: Calculate Speed DONE
 // TODO: Calculate Angle DONE
@@ -8,11 +8,20 @@ import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'sol
 // TODO: Animate on release DONE
 // TODO: Animate bring back
 
+export class SwipeCardRef extends HTMLDivElement {
+    bringBack: () => void;
+
+    constructor() {
+        super();
+    }
+};
+
 type Props = {
     class?: string;
     threshold?: number;
     rotationMultiplier?: number;
     maxRotation?: number;
+    ref?: SwipeCardRef;
 };
 
 type Coordinate = {
@@ -139,9 +148,20 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
             }
         };
 
+    // Ref setup
+    if (props.ref) {
+        console.info("ref exists");
+        props.ref.bringBack = () => {
+            console.info("bringing back");
+            handleMove(offset);
+        };
+    }
+
+
     return <div
         class={`${!isDragging && "transition-all"} ` + props.class}
         style={style()}
+        ref={props.ref}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
         onMouseDown={onMouseDown}
