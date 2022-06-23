@@ -21,6 +21,8 @@ type Props = {
     threshold?: number;
     rotationMultiplier?: number;
     maxRotation?: number;
+    bounce?: number;
+    snapBackDuration?: number;
     ref?: SwipeCardRef;
 };
 
@@ -33,6 +35,14 @@ type Speed = Coordinate;
 
 type TemporalCoordinate = Coordinate & {
     timestamp: number;
+};
+
+const PropsDefault: Props = {
+    threshold: 300,
+    rotationMultiplier: 7.5,
+    maxRotation: 90,
+    snapBackDuration: 300,
+    bounce: 0.1
 };
 
 const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): Speed => {
@@ -54,7 +64,7 @@ const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX,
 const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
 
 const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
-    const props = mergeProps({ threshold: 200, rotationMultiplier: 7.5, maxRotation: 90 }, initialProps);
+    const props = mergeProps(PropsDefault, initialProps);
 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
@@ -86,6 +96,16 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
         lastPosition = finalPosition;
     };
 
+    const snapBack = () => {
+        setStyle({
+            transform: `translate(${lastPosition.x * -props.bounce}px, ${lastPosition.y * -props.bounce}px)
+            rotate(${rotation * -props.bounce}deg)`,
+            transition: `ease-out ${props.snapBackDuration / 1000}s`
+        });
+
+        setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
+    };
+
     const release = () => {
         const velocity = pythagoras(speed);
         isDragging = false;
@@ -108,6 +128,8 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
                 rotate(${finalRotation}deg)`,
                 transition: `ease-out ${multiplier}s`
             });
+
+            lastPosition = { ...lastPosition, ...finalPosition };
         }
     };
 
@@ -150,11 +172,7 @@ const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => 
 
     // Ref setup
     if (props.ref) {
-        console.info("ref exists");
-        props.ref.bringBack = () => {
-            console.info("bringing back");
-            handleMove(offset);
-        };
+        props.ref.bringBack = () => snapBack();
     }
 
 
