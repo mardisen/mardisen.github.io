@@ -61,6 +61,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
     let isDragging: boolean = false;
+    let isReleased: boolean = false;
     let rotation: number = 0;
     let speed: Speed = { x: 0, y: 0 };
     let lastPosition: TemporalCoordinate = {
@@ -89,13 +90,17 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
     };
 
     const snapBack = () => {
-        setStyle({
-            transform: `translate(${lastPosition.x * -props.bounce}px, ${lastPosition.y * -props.bounce}px)
-            rotate(${rotation * -props.bounce}deg)`,
-            transition: `ease-out ${props.snapBackDuration / 1000}s`
-        });
+        console.info(isReleased)
+        if (isReleased) {
+            setStyle({
+                transform: `translate(${lastPosition.x * -props.bounce}px, ${lastPosition.y * -props.bounce}px)
+                rotate(${rotation * -props.bounce}deg)`,
+                transition: `ease-out ${props.snapBackDuration / 1000}s`
+            });
 
-        setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
+            setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
+            isReleased = false;
+        }
     };
 
     const release = () => {
@@ -122,6 +127,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
             });
 
             lastPosition = { ...lastPosition, ...finalPosition };
+            isReleased = true;
         }
     };
 
@@ -164,7 +170,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
 
     // Ref setup
     if (props.ref) {
-        props.ref.bringBack = () => snapBack();
+        props.ref.bringBack = snapBack;
     }
 
 
