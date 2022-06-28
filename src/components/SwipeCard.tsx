@@ -1,11 +1,7 @@
-import { createSignal, JSX, mergeProps, ParentComponent, ParentProps, Ref } from 'solid-js';
+import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
 
-export class SwipeCardRef extends HTMLDivElement {
-    bringBack: () => void;
-
-    constructor() {
-        super();
-    }
+export type SwipeCardRef = {
+    bringBack?: () => void;
 };
 
 export type SwipeCardProps = {
@@ -90,7 +86,6 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
     };
 
     const snapBack = () => {
-        console.info(isReleased)
         if (isReleased) {
             setStyle({
                 transform: `translate(${lastPosition.x * -props.bounce}px, ${lastPosition.y * -props.bounce}px)
@@ -173,11 +168,9 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
         props.ref.bringBack = snapBack;
     }
 
-
     return <div
         class={`${!isDragging && "transition-all"} ` + props.class}
         style={style()}
-        ref={props.ref}
         onMouseMove={onMouseMove}
         onTouchMove={onTouchMove}
         onMouseDown={onMouseDown}
