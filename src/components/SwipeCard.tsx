@@ -1,13 +1,5 @@
 import { createSignal, JSX, mergeProps, ParentComponent, ParentProps, Ref } from 'solid-js';
 
-// TODO: Calculate Speed DONE
-// TODO: Calculate Angle DONE
-// TODO: Animate basic Drag DONE
-// TODO: Define transition DONE
-// TODO: Define animation DONE
-// TODO: Animate on release DONE
-// TODO: Animate bring back
-
 export class SwipeCardRef extends HTMLDivElement {
     bringBack: () => void;
 
@@ -16,7 +8,7 @@ export class SwipeCardRef extends HTMLDivElement {
     }
 };
 
-type Props = {
+export type SwipeCardProps = {
     class?: string;
     threshold?: number;
     rotationMultiplier?: number;
@@ -37,7 +29,7 @@ type TemporalCoordinate = Coordinate & {
     timestamp: number;
 };
 
-const PropsDefault: Props = {
+const PropsDefault: SwipeCardProps = {
     threshold: 300,
     rotationMultiplier: 7.5,
     maxRotation: 90,
@@ -63,7 +55,7 @@ const pythagoras = (coords: Coordinate): number => {
 const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX, y: event.clientY });
 const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
 
-const SwipeCard: ParentComponent<Props> = (initialProps: ParentProps<Props>) => {
+const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<SwipeCardProps>) => {
     const props = mergeProps(PropsDefault, initialProps);
 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
