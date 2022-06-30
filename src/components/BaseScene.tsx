@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 import { WebGLRenderer, PerspectiveCamera, Scene, LineBasicMaterial, Vector3, BufferGeometry, Line } from 'three';
 
 type Props = {
-    class: string;
+    class?: string;
 };
 
 const BaseScene: Component<Props> = (props: Props) => {
