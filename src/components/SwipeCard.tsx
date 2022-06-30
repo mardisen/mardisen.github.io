@@ -87,6 +87,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
 
     const snapBack = () => {
         if (isReleased) {
+            isReleased = false;
             setStyle({
                 transform: `translate(${lastPosition.x * -props.bounce}px, ${lastPosition.y * -props.bounce}px)
                 rotate(${rotation * -props.bounce}deg)`,
@@ -94,7 +95,8 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
             });
 
             setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
-            isReleased = false;
+
+            speed = { x: 0, y: 0 };
         }
     };
 
