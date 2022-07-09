@@ -1,5 +1,12 @@
 import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
 
+export enum SwipeDirection {
+    RIGHT = "right",
+    LEFT = "left",
+    UP = "up",
+    DOWN = "down"
+};
+
 export type SwipeCardRef = {
     bringBack?: () => void;
 };
@@ -11,7 +18,8 @@ export type SwipeCardProps = {
     maxRotation?: number;
     bounce?: number;
     snapBackDuration?: number;
-    ref?: SwipeCardRef;
+    onSwipe?: (direction: SwipeDirection) => void;
+    apiRef?: SwipeCardRef;
 };
 
 type Coordinate = {
@@ -30,7 +38,8 @@ const PropsDefault: SwipeCardProps = {
     rotationMultiplier: 7.5,
     maxRotation: 90,
     snapBackDuration: 300,
-    bounce: 0.1
+    bounce: 0.1,
+    onSwipe: () => { },
 };
 
 const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): Speed => {
@@ -42,6 +51,21 @@ const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate)
     const y = deltaY / deltaT;
 
     return { x, y };
+};
+
+const calcDirection = (speed: Speed): SwipeDirection => {
+    if (Math.abs(speed.x) > Math.abs(speed.y)) {
+        if (speed.x >= 0)
+            return SwipeDirection.RIGHT;
+        else
+            return SwipeDirection.LEFT;
+    }
+    else {
+        if (speed.y >= 0)
+            return SwipeDirection.UP;
+        else
+            return SwipeDirection.DOWN;
+    }
 };
 
 const pythagoras = (coords: Coordinate): number => {
@@ -94,7 +118,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
                 transition: `ease-out ${props.snapBackDuration / 1000}s`
             });
 
-            setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
+            setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration + 25);
 
             speed = { x: 0, y: 0 };
         }
@@ -125,6 +149,8 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
 
             lastPosition = { ...lastPosition, ...finalPosition };
             isReleased = true;
+
+            props.onSwipe(calcDirection(speed));
         }
     };
 
@@ -166,9 +192,14 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
         };
 
     // Ref setup
-    if (props.ref) {
-        props.ref.bringBack = snapBack;
-    }
+    if (props.apiRef) {
+        const oldCallback = props.apiRef.bringBack;
+
+        props.apiRef.bringBack = () => {
+            if (oldCallback) oldCallback();
+            snapBack();
+        };
+    };
 
     return <div
         class={`${!isDragging && "transition-all"} ` + props.class}
