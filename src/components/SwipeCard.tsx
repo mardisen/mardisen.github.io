@@ -11,7 +11,7 @@ export type SwipeCardProps = {
     maxRotation?: number;
     bounce?: number;
     snapBackDuration?: number;
-    ref?: SwipeCardRef;
+    apiRef?: SwipeCardRef;
 };
 
 type Coordinate = {
@@ -166,8 +166,8 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
         };
 
     // Ref setup
-    if (props.ref) {
-        props.ref.bringBack = snapBack;
+    if (props.apiRef) {
+        props.apiRef.bringBack = snapBack;
     }
 
     return <div
