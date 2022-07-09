@@ -1,5 +1,12 @@
 import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
 
+export enum SwipeDirection {
+    RIGHT = "right",
+    LEFT = "left",
+    UP = "up",
+    DOWN = "down"
+};
+
 export type SwipeCardRef = {
     bringBack?: () => void;
 };
@@ -11,7 +18,7 @@ export type SwipeCardProps = {
     maxRotation?: number;
     bounce?: number;
     snapBackDuration?: number;
-    onSwipe?: () => void;
+    onSwipe?: (direction: SwipeDirection) => void;
     apiRef?: SwipeCardRef;
 };
 
@@ -44,6 +51,21 @@ const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate)
     const y = deltaY / deltaT;
 
     return { x, y };
+};
+
+const calcDirection = (speed: Speed): SwipeDirection => {
+    if (Math.abs(speed.x) > Math.abs(speed.y)) {
+        if (speed.x >= 0)
+            return SwipeDirection.RIGHT;
+        else
+            return SwipeDirection.LEFT;
+    }
+    else {
+        if (speed.y >= 0)
+            return SwipeDirection.UP;
+        else
+            return SwipeDirection.DOWN;
+    }
 };
 
 const pythagoras = (coords: Coordinate): number => {
@@ -128,7 +150,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
             lastPosition = { ...lastPosition, ...finalPosition };
             isReleased = true;
 
-            props.onSwipe();
+            props.onSwipe(calcDirection(speed));
         }
     };
 
