@@ -167,8 +167,13 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
 
     // Ref setup
     if (props.apiRef) {
-        props.apiRef.bringBack = snapBack;
-    }
+        const oldCallback = props.apiRef.bringBack;
+
+        props.apiRef.bringBack = () => {
+            if (oldCallback) oldCallback();
+            snapBack();
+        };
+    };
 
     return <div
         class={`${!isDragging && "transition-all"} ` + props.class}
