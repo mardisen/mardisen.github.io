@@ -11,6 +11,7 @@ export type SwipeCardProps = {
     maxRotation?: number;
     bounce?: number;
     snapBackDuration?: number;
+    onSwipe?: () => void;
     apiRef?: SwipeCardRef;
 };
 
@@ -30,7 +31,8 @@ const PropsDefault: SwipeCardProps = {
     rotationMultiplier: 7.5,
     maxRotation: 90,
     snapBackDuration: 300,
-    bounce: 0.1
+    bounce: 0.1,
+    onSwipe: () => { },
 };
 
 const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): Speed => {
@@ -125,6 +127,8 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
 
             lastPosition = { ...lastPosition, ...finalPosition };
             isReleased = true;
+
+            props.onSwipe();
         }
     };
 
