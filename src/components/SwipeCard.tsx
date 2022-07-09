@@ -94,7 +94,7 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
                 transition: `ease-out ${props.snapBackDuration / 1000}s`
             });
 
-            setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration);
+            setTimeout(() => setStyle({ transform: "none" }), props.snapBackDuration + 25);
 
             speed = { x: 0, y: 0 };
         }
