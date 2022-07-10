@@ -1,82 +1,11 @@
-import { createSignal, JSX, mergeProps, ParentComponent, ParentProps } from 'solid-js';
+import { createSignal, JSX, mergeProps, ParentProps } from 'solid-js';
+import { calcDirection, calcSpeed, mouseCoordinates, PropsDefault, pythagoras, touchCoordinates } from './helpers';
+import { Coordinate, Speed, SwipeCardProps, SwipeCardRef, TemporalCoordinate } from './types';
 
-export enum SwipeDirection {
-    RIGHT = "right",
-    LEFT = "left",
-    UP = "up",
-    DOWN = "down"
-};
-
-export type SwipeCardRef = {
-    bringBack?: () => void;
-};
-
-export type SwipeCardProps = {
-    class?: string;
-    threshold?: number;
-    rotationMultiplier?: number;
-    maxRotation?: number;
-    bounce?: number;
-    snapBackDuration?: number;
-    onSwipe?: (direction: SwipeDirection) => void;
-    apiRef?: SwipeCardRef;
-};
-
-type Coordinate = {
-    x: number;
-    y: number;
-};
-
-type Speed = Coordinate;
-
-type TemporalCoordinate = Coordinate & {
-    timestamp: number;
-};
-
-const PropsDefault: SwipeCardProps = {
-    threshold: 300,
-    rotationMultiplier: 7.5,
-    maxRotation: 90,
-    snapBackDuration: 300,
-    bounce: 0.1,
-    onSwipe: () => { },
-};
-
-const calcSpeed = (oldCoords: TemporalCoordinate, newCoords: TemporalCoordinate): Speed => {
-    const deltaX = newCoords.x - oldCoords.x;
-    const deltaY = oldCoords.y - newCoords.y;
-    const deltaT = (newCoords.timestamp - oldCoords.timestamp) / 1000;
-
-    const x = deltaX / deltaT;
-    const y = deltaY / deltaT;
-
-    return { x, y };
-};
-
-const calcDirection = (speed: Speed): SwipeDirection => {
-    if (Math.abs(speed.x) > Math.abs(speed.y)) {
-        if (speed.x >= 0)
-            return SwipeDirection.RIGHT;
-        else
-            return SwipeDirection.LEFT;
-    }
-    else {
-        if (speed.y >= 0)
-            return SwipeDirection.UP;
-        else
-            return SwipeDirection.DOWN;
-    }
-};
-
-const pythagoras = (coords: Coordinate): number => {
-    return Math.sqrt(Math.pow(coords.x, 2) + Math.pow(coords.y, 2));
-};
-
-const mouseCoordinates = (event: MouseEvent): Coordinate => ({ x: event.clientX, y: event.clientY });
-const touchCoordinates = (event: TouchEvent): Coordinate => ({ x: event.touches[0].clientX, y: event.touches[0].clientY });
-
-const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<SwipeCardProps>) => {
+const createSwipeCard = (initialProps: ParentProps<SwipeCardProps>) => {
     const props = mergeProps(PropsDefault, initialProps);
+    const apiRef: SwipeCardRef = {};
+    let ref;
 
     const [style, setStyle] = createSignal<JSX.CSSProperties>({});
 
@@ -191,17 +120,8 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
             }
         };
 
-    // Ref setup
-    if (props.apiRef) {
-        const oldCallback = props.apiRef.bringBack;
-
-        props.apiRef.bringBack = () => {
-            if (oldCallback) oldCallback();
-            snapBack();
-        };
-    };
-
-    return <div
+    const element = <div
+        ref={ref}
         class={`${!isDragging && "transition-all"} ` + props.class}
         style={style()}
         onMouseMove={onMouseMove}
@@ -214,6 +134,21 @@ const SwipeCard: ParentComponent<SwipeCardProps> = (initialProps: ParentProps<Sw
     >
         {props.children}
     </div>;
+
+    // Ref setup
+    if (props.apiRef) {
+        const oldCallback = props.apiRef.bringBack;
+
+        props.apiRef.bringBack = () => {
+            if (oldCallback) oldCallback();
+            snapBack();
+        };
+    };
+
+    if (props.ref)
+        props.ref.current = ref;
+
+    return { element, ref: props.ref ? props.ref.current : ref, apiRef };
 };
 
-export default SwipeCard;
+export default createSwipeCard;

@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
 import BaseScene from './components/BaseScene';
-import SwipeCard, { SwipeCardRef } from './components/SwipeCard';
-
+import SwipeCard from './components/swipe-card';
+import { SwipeCardRef } from './components/swipe-card/types';
 
 const App: Component = () => {
   const swipeCardRef: SwipeCardRef = {};
